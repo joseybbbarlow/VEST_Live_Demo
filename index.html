@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VEST: Canine Vital Signs Monitoring with Wearible Device</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header">
+        <h1>VEST: Canine Vital Signs Monitoring with Wearible Device</h1>
+        <p class="subtitle">Real-Time Multi-Sensor Biometric Analysis Platform for Canines</p>
+    </div>
+
+    <div class="container">
+        <!-- Connection Control Bar -->
+        <div class="control-bar">
+            <div class="connection-section">
+                <button class="btn btn-primary" id="connectBtn" onclick="connectBluetooth()">
+                    Connect Device
+                </button>
+                <button class="btn btn-danger" id="disconnectBtn" onclick="disconnectBluetooth()" style="display:none;">
+                    Disconnect
+                </button>
+                <div class="status-indicator disconnected" id="statusIndicator">
+                    <span class="status-dot red"></span>
+                    <span>Disconnected</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Demo Notice -->
+        <div class="demo-notice">
+            <h3>Live Demo Mode</h3>
+            <p>This demonstration showcases real-time sensor data without a live canine subject. Movement detection and activity classification are simulated for presentation purposes.</p>
+        </div>
+
+        <!-- Dog Profile Configuration -->
+        <div class="dog-profile">
+            <h2>Dog Profile</h2>
+            <div class="profile-grid">
+                <div class="profile-item">
+                    <label>Breed</label>
+                    <select id="breedSelect" onchange="updateHealthRanges()">
+                        <option value="labrador">Labrador Retriever</option>
+                        <option value="german_shepherd">German Shepherd</option>
+                        <option value="golden_retriever">Golden Retriever</option>
+                        <option value="beagle">Beagle</option>
+                        <option value="bulldog">Bulldog</option>
+                        <option value="poodle">Standard Poodle</option>
+                        <option value="husky">Siberian Husky</option>
+                        <option value="boxer">Boxer</option>
+                    </select>
+                </div>
+                <div class="profile-item">
+                    <label>Weight (lbs)</label>
+                    <input type="number" id="weightInput" value="65" min="10" max="150" onchange="updateHealthRanges()">
+                </div>
+                <div class="profile-item">
+                    <label>Age (years)</label>
+                    <input type="number" id="ageInput" value="4" min="1" max="15" onchange="updateHealthRanges()">
+                </div>
+                <div class="profile-item">
+                    <label>Size Category</label>
+                    <select id="sizeSelect" onchange="updateHealthRanges()">
+                        <option value="small">Small (< 25 lbs)</option>
+                        <option value="medium" selected>Medium (25-60 lbs)</option>
+                        <option value="large">Large (60-100 lbs)</option>
+                        <option value="giant">Giant (> 100 lbs)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Mode Control -->
+        <div class="activity-mode">
+            <div class="mode-header">
+                <h2>Activity State Classification</h2>
+            </div>
+            <div class="mode-display" id="modeDisplay">
+                <span class="mode-label" id="modeLabel">AT REST</span>
+                <span>Biometric thresholds adjusted for resting state</span>
+            </div>
+            <div class="mode-controls">
+                <button class="btn-mode" onclick="setMode('rest')">Manual Rest Mode</button>
+                <button class="btn-mode" onclick="setMode('active')">Manual Active Mode</button>
+                <div class="auto-mode-toggle">
+                    <label class="switch">
+                        <input type="checkbox" id="autoModeToggle" checked onchange="toggleAutoMode()">
+                        <span class="slider"></span>
+                    </label>
+                    <span>Automatic Detection</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sensor Data Grid -->
+        <div class="sensor-grid">
+            <!-- Temperature Card -->
+            <div class="sensor-card">
+                <h3>Core Body Temperature</h3>
+                <div class="metric-display">
+                    <div>
+                        <span class="metric-value" id="tempValue">--</span>
+                        <span class="metric-unit">°F</span>
+                    </div>
+                    <div class="health-status normal" id="tempStatus">Normal</div>
+                </div>
+                
+                <div class="tech-details">
+                    <div class="tech-item">
+                        <div class="tech-label">Sensor 1</div>
+                        <div class="tech-value" id="temp1">--</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-label">Sensor 2</div>
+                        <div class="tech-value" id="temp2">--</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-label">Delta</div>
+                        <div class="tech-value" id="tempDelta">--</div>
+                    </div>
+                </div>
+
+                <div class="range-info">
+                    <h4>Expected Physiological Ranges</h4>
+                    <div class="range-row">
+                        <span class="range-label">Resting State:</span>
+                        <span class="range-value" id="tempRestRange">101.0 - 102.5°F</span>
+                    </div>
+                    <div class="range-row">
+                        <span class="range-label">Active State:</span>
+                        <span class="range-value" id="tempActiveRange">102.0 - 103.5°F</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heart Rate Card -->
+            <div class="sensor-card">
+                <h3>Heart Rate (Photoplethysmography)</h3>
+                <div class="metric-display">
+                    <div>
+                        <span class="metric-value" id="hrValue">--</span>
+                        <span class="metric-unit">BPM</span>
+                    </div>
+                    <div class="health-status normal" id="hrStatus">Normal</div>
+                </div>
+
+                <div class="tech-details">
+                    <div class="tech-item">
+                        <div class="tech-label">Raw PPG</div>
+                        <div class="tech-value" id="ppgRaw">--</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-label">Signal Quality</div>
+                        <div class="tech-value" id="ppgQuality">Good</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-label">Sampling Rate</div>
+                        <div class="tech-value">100 Hz</div>
+                    </div>
+                </div>
+
+                <div class="range-info">
+                    <h4>Expected Physiological Ranges</h4>
+                    <div class="range-row">
+                        <span class="range-label">Resting State:</span>
+                        <span class="range-value" id="hrRestRange">60 - 100 BPM</span>
+                    </div>
+                    <div class="range-row">
+                        <span class="range-label">Active State:</span>
+                        <span class="range-value" id="hrActiveRange">100 - 180 BPM</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accelerometer Card -->
+            <div class="sensor-card">
+                <h3>Tri-Axial Accelerometry</h3>
+                
+                <div class="accel-grid">
+                    <div class="accel-axis">
+                        <div class="axis-label">X-Axis (g)</div>
+                        <div class="axis-value" id="accelX">--</div>
+                    </div>
+                    <div class="accel-axis">
+                        <div class="axis-label">Y-Axis (g)</div>
+                        <div class="axis-value" id="accelY">--</div>
+                    </div>
+                    <div class="accel-axis">
+                        <div class="axis-label">Z-Axis (g)</div>
+                        <div class="axis-value" id="accelZ">--</div>
+                    </div>
+                    <div class="accel-axis">
+                        <div class="axis-label">Magnitude</div>
+                        <div class="axis-value" id="accelMag">--</div>
+                    </div>
+                </div>
+
+                <div class="movement-status rest" id="movementStatus">
+                    Subject at Rest
+                </div>
+
+                <div class="tech-details">
+                    <div class="tech-item">
+                        <div class="tech-label">Sampling Rate</div>
+                        <div class="tech-value">2 Hz</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-label">Sensitivity</div>
+                        <div class="tech-value" id="sensitivity">Normal</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-label">Threshold</div>
+                        <div class="tech-value" id="threshold">0.15g</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Status -->
+        <div class="feature-status">
+            <h2>System Capabilities & Development Status</h2>
+            <div class="feature-list">
+                <div class="feature-item implemented">
+                    <span class="feature-badge badge-live">Live Demo</span>
+                    <h3>Core Temperature Monitoring</h3>
+                    <p>Dual DS18B20 sensor array providing temperature measurements. Real-time thermal state assessment with breed-specific reference ranges.</p>
+                </div>
+                
+                <div class="feature-item implemented">
+                    <span class="feature-badge badge-live">Live Demo</span>
+                    <h3>Photoplethysmography (PPG)</h3>
+                    <p>Optical heart rate detection using reflective infrared photoplethysmography. Continuous cardiac rhythm monitoring at 100Hz sampling frequency.</p>
+                </div>
+                
+                <div class="feature-item implemented">
+                    <span class="feature-badge badge-live">Live Demo</span>
+                    <h3>Tri-Axial Accelerometry</h3>
+                    <p>MPU9250 9-DOF IMU providing 3-axis acceleration data for activity classification and posture detection. Enables automated rest/active state determination.</p>
+                </div>
+                
+                <div class="feature-item in-progress">
+                    <span class="feature-badge badge-progress">In Development</span>
+                    <h3>Respiratory Rate Analysis</h3>
+                    <p>Capacitive stretch sensor integration for non-invasive respiratory monitoring. Signal processing algorithms under development for breath-per-minute calculation from thoracic expansion patterns.</p>
+                </div>
+                
+                <div class="feature-item planned">
+                    <span class="feature-badge badge-planned">Future Feature</span>
+                    <h3>Automated Level of Activity Classification</h3>
+                    <p>Machine learning classifier to automatically detect activity states (resting, walking, running, playing) based on multi-sensor fusion. Currently requires manual mode selection.</p>
+                </div>
+                
+                <div class="feature-item planned">
+                    <span class="feature-badge badge-planned">Future Feature</span>
+                    <h3>Longitudinal Data Analytics</h3>
+                    <p>Cloud-based data aggregation and trend analysis. Historical baselines for personalized health anomaly detection and veterinary reporting integration.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
