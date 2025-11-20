@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dog Vest Medical Monitor</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Chart.js for real-time graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🐕 Dog Vest Medical Monitor</h1>
+            <p class="subtitle">Real-time health monitoring via Web Bluetooth</p>
+        </header>
+
+        <!-- Connection Section -->
+        <div class="connection-section">
+            <button id="connectBtn" class="btn-connect">
+                <span id="btnText">Connect to Dog Vest</span>
+            </button>
+            <div id="connectionStatus" class="status disconnected">
+                ⚠️ Not Connected
+            </div>
+        </div>
+
+        <!-- Alert Banner (hidden by default) -->
+        <div id="alertBanner" class="alert-banner hidden">
+            <span id="alertMessage"></span>
+            <button id="dismissAlert" class="btn-dismiss">✕</button>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Heart Rate Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">❤️</span>
+                    <h2>Heart Rate</h2>
+                </div>
+                <div class="card-body">
+                    <div class="metric-value">
+                        <span id="heartRate" class="value">--</span>
+                        <span class="unit">BPM</span>
+                    </div>
+                    <div class="metric-status" id="hrStatus">Waiting for data...</div>
+                    <canvas id="heartRateChart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Temperature Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🌡️</span>
+                    <h2>Temperature</h2>
+                </div>
+                <div class="card-body">
+                    <div class="metric-value">
+                        <span id="temperature" class="value">--</span>
+                        <span class="unit">°C</span>
+                    </div>
+                    <div class="metric-secondary">
+                        <span id="temperatureF">--</span> °F
+                    </div>
+                    <div class="metric-status" id="tempStatus">Waiting for data...</div>
+                    <canvas id="temperatureChart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Respiratory Rate Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🫁</span>
+                    <h2>Respiratory Rate</h2>
+                </div>
+                <div class="card-body">
+                    <div class="metric-value">
+                        <span id="respiratoryRate" class="value">--</span>
+                        <span class="unit">br/min</span>
+                    </div>
+                    <div class="metric-status" id="respStatus">Waiting for data...</div>
+                    <canvas id="respiratoryChart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Activity Level Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">🏃</span>
+                    <h2>Activity Level</h2>
+                </div>
+                <div class="card-body">
+                    <div class="metric-value">
+                        <span id="activityLevel" class="value">--</span>
+                        <span class="unit">G</span>
+                    </div>
+                    <div class="activity-state" id="activityState">Unknown</div>
+                    <div class="steps-counter">
+                        <span class="steps-label">Steps:</span>
+                        <span id="stepCount" class="steps-value">0</span>
+                    </div>
+                    <canvas id="activityChart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Stretch Sensor / Chest Expansion -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📏</span>
+                    <h2>Chest Expansion</h2>
+                </div>
+                <div class="card-body">
+                    <div class="metric-value">
+                        <span id="stretchPercent" class="value">--</span>
+                        <span class="unit">%</span>
+                    </div>
+                    <div class="metric-status">Stretch from baseline</div>
+                    <canvas id="stretchChart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+
+            <!-- Accelerometer Data Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-icon">📊</span>
+                    <h2>Accelerometer</h2>
+                </div>
+                <div class="card-body">
+                    <div class="accel-grid">
+                        <div class="accel-axis">
+                            <span class="axis-label">X:</span>
+                            <span id="accelX" class="axis-value">--</span>
+                        </div>
+                        <div class="accel-axis">
+                            <span class="axis-label">Y:</span>
+                            <span id="accelY" class="axis-value">--</span>
+                        </div>
+                        <div class="accel-axis">
+                            <span class="axis-label">Z:</span>
+                            <span id="accelZ" class="axis-value">--</span>
+                        </div>
+                    </div>
+                    <canvas id="accelChart" class="chart-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Log Section -->
+        <div class="log-section">
+            <div class="log-header">
+                <h3>Data Log</h3>
+                <button id="clearLog" class="btn-clear">Clear Log</button>
+            </div>
+            <div id="dataLog" class="data-log"></div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Last Update: <span id="lastUpdate">Never</span></p>
+            <p class="tech-info">Web Bluetooth API • ESP32-C6 • Real-time Monitoring</p>
+        </footer>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+        <p>Connecting to Dog Vest...</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
